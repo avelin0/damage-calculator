@@ -1,0 +1,179 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>damage</name>
+    </assembly>
+    <members>
+        <member name="T:SimulacaoDano">
+            <summary>
+            Contém as estruturas de dados e a lógica central para a simulação de dano de artilharia,
+            incluindo o cálculo estocástico de Probabilidade de Acerto (Pk) e a aplicação de dano (Ph/k)
+            baseado na atenuação e na vulnerabilidade do alvo.
+            </summary>
+        </member>
+        <member name="T:SimulacaoDano.Municao">
+            <summary>
+            Define as características físicas e balísticas de uma munição de artilharia.
+            </summary>
+        </member>
+        <member name="P:SimulacaoDano.Municao.Calibre">
+            <summary>
+            Nome do calibre da munição (ex: "Tiro 155mm").
+            </summary>
+        </member>
+        <member name="P:SimulacaoDano.Municao.RaioDetonacaoM">
+            <summary>
+            Raio máximo de detonação para o cálculo de atenuação de dano (em metros).
+            </summary>
+        </member>
+        <member name="P:SimulacaoDano.Municao.TntKg">
+            <summary>
+            Equivalente à massa de TNT (em Kg) para fins de cálculo de energia.
+            </summary>
+        </member>
+        <member name="P:SimulacaoDano.Municao.CustoUnitario">
+            <summary>
+            Custo unitário da munição para análises de custo-eficácia.
+            </summary>
+        </member>
+        <member name="P:SimulacaoDano.Municao.DanoEpicentroPV">
+            <summary>
+            Dano bruto que esta munição causa no epicentro (Posição 0m), em Pontos de Vida (PV).
+            </summary>
+        </member>
+        <member name="P:SimulacaoDano.Municao.WRRange">
+            <summary>
+            Raio de Arma (Weapon Radius) no alcance (Range), usado em modelos de dano analítico (ex: Carlton).
+            </summary>
+        </member>
+        <member name="P:SimulacaoDano.Municao.WRDeflection">
+            <summary>
+            Raio de Arma (Weapon Radius) na deflexão, usado em modelos de dano analítico (ex: Carlton).
+            </summary>
+        </member>
+        <member name="T:SimulacaoDano.Alvo">
+            <summary>
+            Define as propriedades de resistência, estado de vida e vulnerabilidade do alvo.
+            </summary>
+        </member>
+        <member name="P:SimulacaoDano.Alvo.Nome">
+            <summary>
+            Nome identificador do alvo (ex: "Seç AAAe").
+            </summary>
+        </member>
+        <member name="P:SimulacaoDano.Alvo.VidaAtual">
+            <summary>
+            Vida atual do alvo. Começa em VidaMaxima e é decrementada pelo dano.
+            </summary>
+        </member>
+        <member name="P:SimulacaoDano.Alvo.VidaMaxima">
+            <summary>
+            Vida máxima do objeto (Pontos de Vida - PDV).
+            </summary>
+        </member>
+        <member name="P:SimulacaoDano.Alvo.BlindagemTVA">
+            <summary>
+            Valor de Blindagem/Resistência (TVA) do alvo. Usado como referência para calcular o fator de escala de dano.
+            </summary>
+        </member>
+        <member name="P:SimulacaoDano.Alvo.Exposicao">
+            <summary>
+            Exposição do alvo no terreno (0.0 a 1.0). Afeta a probabilidade de acerto (Pk).
+            </summary>
+        </member>
+        <member name="P:SimulacaoDano.Alvo.PosicaoM">
+            <summary>
+            Posição do alvo em relação ao ponto de impacto (em metros). Usado para atenuação.
+            </summary>
+        </member>
+        <member name="P:SimulacaoDano.Alvo.DanoEscalaFator">
+            <summary>
+            Fator de calibração que garante que a dosagem de fogo da referência (TMQ) seja atingida no epicentro.
+            </summary>
+        </member>
+        <member name="M:SimulacaoDano.CalcularPk(System.Double,System.Int32,System.Double)">
+            <summary>
+            Calcula a Probabilidade de Acerto (Pk) com base no modelo de queda linear simplificado.
+            </summary>
+            <param name="d">Distância do alvo ao epicentro (m).</param>
+            <param name="Rdeton">Raio máximo de detonação (m).</param>
+            <param name="E">Exposição do alvo (0.0 a 1.0).</param>
+            <returns>A probabilidade de acerto Pk (0 a 100).</returns>
+        </member>
+        <member name="M:SimulacaoDano.AplicarDano(SimulacaoDano.Alvo,SimulacaoDano.Municao)">
+            <summary>
+            Aplica o dano real (Ph/k) ao alvo com base na atenuação da explosão e no fator de escala.
+            </summary>
+            <param name="alvo">O alvo a ser atingido.</param>
+            <param name="municao">A munição utilizada.</param>
+            <returns>O valor de dano efetivo aplicado ao alvo.</returns>
+        </member>
+        <member name="M:SimulacaoDano.CalcularDanoCarlton(System.Double,System.Double,System.Double,System.Double)">
+            <summary>
+            Calcula a probabilidade de dano (Pk) usando o modelo Carlton/Meyer (decaimento exponencial).
+            Esta função é mantida para fins de referência analítica e não é utilizada na simulação de dano principal (AplicarDano).
+            </summary>
+            <param name="x">Distância no alcance (Range) do ponto de impacto (m).</param>
+            <param name="y">Distância na deflexão do ponto de impacto (m).</param>
+            <param name="WRr">Raio de Arma no alcance.</param>
+            <param name="WRd">Raio de Arma na deflexão.</param>
+            <returns>A probabilidade de acerto (Pk) (0 a 1).</returns>
+        </member>
+        <member name="T:Program">
+            <summary>
+            Classe principal que inicializa o modelo de simulação, define os alvos e munições,
+            e executa as tabelas de validação e análise de sensibilidade no console.
+            </summary>
+        </member>
+        <member name="F:Program.Municoes">
+            <summary>
+            Dicionário contendo as especificações detalhadas de cada munição utilizada.
+            </summary>
+        </member>
+        <member name="F:Program.AlvosTabela">
+            <summary>
+            Tabela de referência contendo a dosagem de tiros de 81mm e a vida total (PV) de cada alvo.
+            </summary>
+        </member>
+        <member name="F:Program.AlvosBase">
+            <summary>
+            Dicionário contendo as instâncias de Alvo inicializadas e calibradas com o Fator de Escala.
+            </summary>
+        </member>
+        <member name="M:Program.InicializarAlvos">
+            <summary>
+            Inicializa e calibra os alvos usando a dosagem de 81mm como referência.
+            </summary>
+            <returns>O dicionário de alvos calibrados.</returns>
+        </member>
+        <member name="M:Program.Main">
+            <summary>
+            Ponto de entrada principal da aplicação. Executa as tabelas de validação e sensibilidade.
+            </summary>
+        </member>
+        <member name="M:Program.SimularTirosParaDestruicao(SimulacaoDano.Alvo,SimulacaoDano.Municao)">
+            <summary>
+            Simula o número de tiros necessários para destruir um alvo no epicentro (Posição 0m).
+            </summary>
+            <param name="alvo">O alvo a ser testado (será clonado internamente).</param>
+            <param name="municao">A munição utilizada.</param>
+            <returns>O número inteiro de tiros necessários para zerar a vida do alvo.</returns>
+        </member>
+        <member name="M:Program.ExibirTabelaComparativaPorMunicao">
+            <summary>
+            Exibe a tabela de comparação da dosagem de fogo no epicentro entre diferentes calibres.
+            </summary>
+        </member>
+        <member name="M:Program.ExibirTabelaValidacaoFinal">
+            <summary>
+            Exibe a tabela de validação comparando a dosagem simulada do modelo com a referência TMQ.
+            </summary>
+        </member>
+        <member name="M:Program.ExibirTabelaSensibilidade(System.String)">
+            <summary>
+            Exibe a tabela de análise de sensibilidade da probabilidade de acerto (Pk) e dosagem (Tiros) 
+            em função da distância do impacto.
+            </summary>
+        </member>
+    </members>
+</doc>

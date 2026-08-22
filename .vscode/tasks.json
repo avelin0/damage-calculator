@@ -1,0 +1,44 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build",
+            "command": "dotnet",
+            "type": "shell",
+            "args": [
+                "build",
+                // Ask dotnet build to generate full paths for file names.
+                "/property:GenerateFullPaths=true",
+                // Do not generate summary otherwise it leads to duplicate errors in Problems panel
+                "/consoleloggerparameters:NoSummary"
+            ],
+            "group": "build",
+            "presentation": {
+                "reveal": "silent"
+            },
+            "problemMatcher": "$msCompile"
+        },
+        // Início da nova task "build and run"
+        {
+            "label": "build and run",
+            "command": "dotnet",
+            "type": "shell",
+            "args": [
+                "run",
+                // Esta opção garante que o comando 'dotnet run' seja executado.
+                // Ele implicitamente verifica se o 'build' é necessário antes de rodar.
+                // Se preferir ter certeza que o 'build' é chamado, use "dependsOn" abaixo.
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "dependsOn": "build", // Garante que a task 'build' seja executada primeiro.
+            "presentation": {
+                "reveal": "always", // Mostra o terminal para ver a saída da aplicação.
+                "panel": "new" // Abre um novo terminal para a execução.
+            },
+            "problemMatcher": "$msCompile"
+        }
+    ]
+}
